@@ -1,772 +1,934 @@
-import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell } from 'recharts';
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Wellbeing Dashboard - HoFT</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <style>
+        :root {
+            --hoft-blue: #001E62;
+            --hoft-orange: #FF5C39;
+            --hoft-light-blue: #345082;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .hoft-blue {
+            background-color: var(--hoft-blue);
+        }
+        
+        .hoft-orange {
+            background-color: var(--hoft-orange);
+        }
+        
+        .hoft-border {
+            border-color: var(--hoft-blue);
+        }
+        
+        .hoft-text {
+            color: var(--hoft-blue);
+        }
+        
+        .hoft-btn {
+            background-color: var(--hoft-blue);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        .hoft-btn:hover {
+            background-color: #001a4e;
+        }
+        
+        .hoft-btn-orange {
+            background-color: var(--hoft-orange);
+        }
+        
+        .hoft-btn-orange:hover {
+            background-color: #e04e30;
+        }
+        
+        .card {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: var(--hoft-blue);
+            color: white;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-body {
+            background-color: #f9fafb;
+            padding: 1rem;
+        }
+        
+        .card-footer {
+            background-color: #ebf3ff;
+            padding: 0.75rem;
+        }
+        
+        /* Diagonales Design-Element */
+        .diagonal-divider {
+            position: relative;
+            height: 2rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .diagonal-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 4rem;
+            background-color: white;
+            transform: rotate(3deg);
+            transform-origin: bottom right;
+        }
+        
+        .diagonal-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 4rem;
+            background-color: white;
+            transform: rotate(-3deg);
+            transform-origin: bottom left;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <div class="flex items-center">
+                <div class="mr-2 font-bold text-white bg-blue-900 p-2 rounded" style="background-color: var(--hoft-blue);">
+                    <span class="block text-xl">HoFT</span>
+                </div>
+                <div class="text-xs text-blue-900" style="color: var(--hoft-blue);">
+                    <span class="block">House of</span>
+                    <span class="block">Finance & Tech</span>
+                </div>
+            </div>
+            <div class="text-sm text-gray-500">Berlin, April 2025</div>
+        </header>
+        
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Financial Wellbeing Dashboard</h1>
+        
+        <!-- Hauptcontainer -->
+        <main>
+            <!-- Gesamtscore -->
+            <div class="hoft-blue text-white p-6 mb-4 rounded-md flex flex-col items-center">
+                <p class="text-lg mb-1">Übergreifende Abdeckung der Bedarfsfelder:</p>
+                <p class="text-5xl font-bold" id="gesamtScore">47%</p>
+            </div>
+            
+            <!-- Diagonales Design-Element -->
+            <div class="diagonal-divider">
+                <div class="diagonal-right"></div>
+                <div class="diagonal-left"></div>
+            </div>
+            
+            <!-- Drei Hauptbereiche -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <!-- Finanzielle Basis -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="text-sm md:text-base">Finanzielle Basis</span>
+                        <span class="text-xl font-bold" id="finanzielleBasisScore">45%</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="font-semibold mb-2 text-gray-700">Monatliche Übersicht</h3>
+                        <div class="mb-4">
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="text-sm text-gray-600">Einkommen (€):</label>
+                                <input 
+                                    type="number" 
+                                    id="einkommen" 
+                                    value="3250" 
+                                    class="border px-2 py-1 w-full rounded-sm"
+                                >
+                                
+                                <label class="text-sm text-gray-600">Fixkosten (€):</label>
+                                <input 
+                                    type="number" 
+                                    id="fixkosten" 
+                                    value="1880" 
+                                    class="border px-2 py-1 w-full rounded-sm"
+                                >
+                                
+                                <label class="text-sm text-gray-600">Variable Ausgaben (€):</label>
+                                <input 
+                                    type="number" 
+                                    id="variableAusgaben" 
+                                    value="940" 
+                                    class="border px-2 py-1 w-full rounded-sm"
+                                >
+                                
+                                <label class="text-sm font-semibold text-gray-700">Überschuss:</label>
+                                <span class="font-semibold text-gray-700" id="ueberschuss">430 €</span>
+                            </div>
+                            
+                            <div class="mt-4 text-sm text-gray-600">
+                                Sparquote: <span id="sparquote">13</span>% (Empfehlung: 15%)
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-2 text-gray-700">Notgroschen</h3>
+                        <div class="mb-4">
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="text-sm text-gray-600">Notgroschen (€):</label>
+                                <input 
+                                    type="number" 
+                                    id="notgroschen" 
+                                    value="1450" 
+                                    class="border px-2 py-1 w-full rounded-sm"
+                                >
+                            </div>
+                            <div class="mt-1 text-sm text-gray-600">
+                                Empfohlen wären <span id="empfohlenerNotgroschen">8460</span> € (3 Monatsausgaben)
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-2 text-gray-700">Schulden</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="text-sm text-gray-600">Konsumentenkredit (€):</label>
+                            <input 
+                                type="number" 
+                                id="konsumentenkredit" 
+                                value="1100" 
+                                class="border px-2 py-1 w-full rounded-sm"
+                            >
+                            
+                            <label class="text-sm text-gray-600">Dispositionskredit (€):</label>
+                            <input 
+                                type="number" 
+                                id="dispositionskredit" 
+                                value="2050" 
+                                class="border px-2 py-1 w-full rounded-sm"
+                            >
+                            
+                            <label class="text-sm font-semibold text-gray-700">Total:</label>
+                            <span class="font-semibold text-gray-700" id="gesamtSchulden">3150 €</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="hoft-btn w-full">
+                            <span class="mr-2">01</span> Notgroschen aufbauen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Anlage & Vermögensbasis -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="text-sm md:text-base">Anlage & Vermögensbasis</span>
+                        <span class="text-xl font-bold" id="anlageVermogensScore">55%</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="font-semibold mb-2 text-gray-700">Aktueller Vermögensstand</h3>
+                        <div class="mb-4">
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="text-sm text-gray-600">Tagesgeld (€):</label>
+                                <input 
+                                    type="number" 
+                                    id="tagesgeld" 
+                                    value="8000" 
+                                    class="border px-2 py-1 w-full rounded-sm"
+                                >
+                                
+                                <label class="text-sm text-gray-600">ETF (€):</label>
+                                <input 
+                                    type="number" 
+                                    id="etf" 
+                                    value="12500" 
+                                    class="border px-2 py-1 w-full rounded-sm"
+                                >
+                                
+                                <label class="text-sm text-gray-600">Bausparen (€):</label>
+                                <input 
+                                    type="number" 
+                                    id="bausparen" 
+                                    value="7300" 
+                                    class="border px-2 py-1 w-full rounded-sm"
+                                >
+                                
+                                <label class="text-sm font-semibold text-gray-700">Total:</label>
+                                <span class="font-semibold text-gray-700" id="gesamtVermoegen">27800 €</span>
+                            </div>
+                            
+                            <div class="flex justify-center mt-4">
+                                <canvas id="vermoegenChart" width="150" height="150"></canvas>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="text-sm text-gray-600">Vermögensziel (€):</label>
+                                    <input 
+                                        type="number" 
+                                        id="vermogensziel" 
+                                        value="100000" 
+                                        class="border px-2 py-1 w-full rounded-sm"
+                                    >
+                                    
+                                    <label class="text-sm text-gray-600">Zieljahr:</label>
+                                    <input 
+                                        type="number" 
+                                        id="zieljahr" 
+                                        value="2040" 
+                                        class="border px-2 py-1 w-full rounded-sm"
+                                    >
+                                </div>
+                                <div class="mt-1 text-sm text-gray-600">
+                                    Ziel: <span id="vermogenszielDisplay">100.000</span> € bis <span id="zieljahrDisplay">2040</span> (<span id="vermogensZielFortschritt">28</span>% erreicht)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-2 text-gray-700">Altersvorsorge</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="text-sm text-gray-600">Gesetzliche Rentenansprüche (€):</label>
+                            <input 
+                                type="number" 
+                                id="gesetzlicheRente" 
+                                value="1100" 
+                                class="border px-2 py-1 w-full rounded-sm"
+                            >
+                            
+                            <label class="text-sm text-gray-600">Betriebliche Altersvorsorge (€):</label>
+                            <input 
+                                type="number" 
+                                id="betrieblicheAltersvorsorge" 
+                                value="750" 
+                                class="border px-2 py-1 w-full rounded-sm"
+                            >
+                            
+                            <label class="text-sm text-gray-600">Private Vorsorge (€):</label>
+                            <input 
+                                type="number" 
+                                id="privateVorsorge" 
+                                value="0" 
+                                class="border px-2 py-1 w-full rounded-sm"
+                            >
+                            
+                            <label class="text-sm font-semibold text-gray-700">Erwartete monatliche Rente:</label>
+                            <span class="font-semibold text-gray-700" id="monatlicheRente">1850 €</span>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-600">
+                            Deine aktuelle Vorsorge deckt rund <span id="vorsorgedeckung">60</span>% deiner aktuellen Lebenshaltungskosten ab
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="hoft-btn w-full">
+                            <span class="mr-2">02</span> Vorsorgelücke schließen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Risikoabsicherung -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="text-sm md:text-base">Risikoabsicherung</span>
+                        <span class="text-xl font-bold" id="risikoScore">42%</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="font-semibold mb-2 text-gray-700">Personenschutz</h3>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="berufsunfaehigkeit" 
+                                    checked 
+                                    class="mr-2"
+                                >
+                                <label for="berufsunfaehigkeit" class="text-sm text-gray-600">Berufsunfähigkeitsversicherung</label>
+                            </div>
+                            <div id="berufsunfaehigkeitDetails" class="pl-6 mb-2">
+                                <label class="text-sm text-gray-600">Betrag (€/Monat):</label>
+                                <input 
+                                    type="number" 
+                                    id="berufsunfaehigkeitBetrag" 
+                                    value="1200" 
+                                    class="border px-2 py-1 w-32 ml-2 rounded-sm"
+                                >
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="leben" 
+                                    class="mr-2"
+                                >
+                                <label for="leben" class="text-sm text-gray-600">Lebensversicherung</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="pflege" 
+                                    class="mr-2"
+                                >
+                                <label for="pflege" class="text-sm text-gray-600">Pflegeversicherung</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="unfall" 
+                                    class="mr-2"
+                                >
+                                <label for="unfall" class="text-sm text-gray-600">Unfallversicherung</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="ausland" 
+                                    class="mr-2"
+                                >
+                                <label for="ausland" class="text-sm text-gray-600">Auslandsreisekrankenversicherung</label>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-2 text-gray-700">Sachschutz</h3>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="hausrat" 
+                                    class="mr-2"
+                                >
+                                <label for="hausrat" class="text-sm text-gray-600">Hausratversicherung</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="haftpflicht" 
+                                    checked 
+                                    class="mr-2"
+                                >
+                                <label for="haftpflicht" class="text-sm text-gray-600">Haftpflichtversicherung</label>
+                            </div>
+                            <div id="haftpflichtDetails" class="pl-6 mb-2">
+                                <label class="text-sm text-gray-600">Deckungssumme (Mio. €):</label>
+                                <input 
+                                    type="number" 
+                                    id="haftpflichtDeckung" 
+                                    value="10" 
+                                    class="border px-2 py-1 w-24 ml-2 rounded-sm"
+                                >
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="rechtsschutz" 
+                                    checked 
+                                    class="mr-2"
+                                >
+                                <label for="rechtsschutz" class="text-sm text-gray-600">Rechtsschutzversicherung</label>
+                            </div>
+                            <div id="rechtsschutzDetails" class="pl-6 mb-2">
+                                <label class="text-sm text-gray-600">Beitrag (€/Monat):</label>
+                                <input 
+                                    type="number" 
+                                    id="rechtsschutzBeitrag" 
+                                    value="19.90" 
+                                    step="0.01"
+                                    class="border px-2 py-1 w-24 ml-2 rounded-sm"
+                                >
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="kfz" 
+                                    checked 
+                                    class="mr-2"
+                                >
+                                <label for="kfz" class="text-sm text-gray-600">Kfz-Versicherung</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="elektronik" 
+                                    class="mr-2"
+                                >
+                                <label for="elektronik" class="text-sm text-gray-600">Elektronikversicherung</label>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-2 text-gray-700">Notfallordner</h3>
+                        <div>
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="patientenverfuegung" 
+                                    checked 
+                                    class="mr-2"
+                                >
+                                <label for="patientenverfuegung" class="text-sm text-gray-600">Patientenverfügung</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="vorsorgevollmacht" 
+                                    checked 
+                                    class="mr-2"
+                                >
+                                <label for="vorsorgevollmacht" class="text-sm text-gray-600">Vorsorgevollmacht</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="betreuungsverfuegung" 
+                                    checked 
+                                    class="mr-2"
+                                >
+                                <label for="betreuungsverfuegung" class="text-sm text-gray-600">Betreuungsverfügung</label>
+                            </div>
+                            
+                            <div class="flex items-center mb-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="testament" 
+                                    class="mr-2"
+                                >
+                                <label for="testament" class="text-sm text-gray-600">Testament</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="hoft-btn w-full">
+                            <span class="mr-2">03</span> Absicherungslücken schließen
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Empfehlungsbereich -->
+            <div class="bg-white p-6 rounded-md shadow-md border border-gray-100">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 hoft-orange">
+                        <span class="text-white font-bold">€</span>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Empfehlungen für deine finanzielle Zukunft</h2>
+                </div>
+                
+                <div id="empfehlungen" class="space-y-3">
+                    <!-- Empfehlungen werden dynamisch eingefügt -->
+                </div>
 
-const FinancialWellbeingDashboard = () => {
-  // State für alle Eingabefelder und berechnete Werte
-  const [data, setData] = useState({
-    // Finanzielle Basis
-    einkommen: 3250,
-    fixkosten: 1880,
-    variableAusgaben: 940,
-    notgroschen: 1450,
-    konsumentenkredit: 1100,
-    dispositionskredit: 2050,
-    
-    // Anlage & Vermögensbasis
-    tagesgeld: 8000,
-    etf: 12500,
-    bausparen: 7300,
-    gesetzlicheRente: 1100,
-    betrieblicheAltersvorsorge: 750,
-    privateVorsorge: 0,
-    vermogensziel: 100000,
-    zieljahr: 2040,
-    
-    // Risikoabsicherung
-    berufsunfahigkeitsversicherung: true,
-    berufsunfahigkeitsBetrag: 1200,
-    lebensversicherung: false,
-    pflegeversicherung: false,
-    unfallversicherung: false,
-    auslandsreisekrankenversicherung: false,
-    hausratversicherung: false,
-    haftpflichtversicherung: true,
-    haftpflichtDeckung: 10,
-    rechtsschutzversicherung: true,
-    rechtsschutzBeitrag: 19.90,
-    kfzVersicherung: true,
-    elektronikversicherung: false,
-    patientenverfugung: true,
-    vorsorgevollmacht: true,
-    betreuungsverfugung: true,
-    testament: false
-  });
-
-  // Berechnete Werte
-  const [scores, setScores] = useState({
-    finanzielleBasis: 0,
-    anlageVermogensbasis: 0,
-    risikoabsicherung: 0,
-    gesamtScore: 0
-  });
-
-  // Berechnung des Überschusses
-  const uberschuss = data.einkommen - data.fixkosten - data.variableAusgaben;
-  
-  // Gesamtvermögen
-  const gesamtVermogen = data.tagesgeld + data.etf + data.bausparen;
-  
-  // Gesamtschulden
-  const gesamtSchulden = data.konsumentenkredit + data.dispositionskredit;
-  
-  // Erwartete monatliche Rente
-  const monatlicherRente = data.gesetzlicheRente + data.betrieblicheAltersvorsorge + data.privateVorsorge;
-  
-  // Sparquote in Prozent
-  const sparquote = Math.round((uberschuss / data.einkommen) * 100);
-
-  // Vermögensziel Fortschritt
-  const vermogensZielFortschritt = Math.round((gesamtVermogen / data.vermogensziel) * 100);
-
-  // Berechnung der Scores
-  useEffect(() => {
-    // Finanzielle Basis Score (45% Beispiel)
-    const finanzielleBasisScore = calculateFinanzielleBasisScore();
-    
-    // Anlage & Vermögensbasis Score (55% Beispiel)
-    const anlageVermogensScore = calculateAnlageVermogensScore();
-    
-    // Risikoabsicherung Score (42% Beispiel)
-    const risikoScore = calculateRisikoScore();
-    
-    // Gesamtscore (47% Beispiel)
-    const gesamt = Math.round((finanzielleBasisScore + anlageVermogensScore + risikoScore) / 3);
-    
-    setScores({
-      finanzielleBasis: finanzielleBasisScore,
-      anlageVermogensbasis: anlageVermogensScore,
-      risikoabsicherung: risikoScore,
-      gesamtScore: gesamt
-    });
-  }, [data]);
-
-  // Berechne den Score für finanzielle Basis
-  const calculateFinanzielleBasisScore = () => {
-    let score = 0;
-    
-    // Überschuss vorhanden
-    if (uberschuss > 0) score += 10;
-    
-    // Notgroschen ausreichend (3 Monatsausgaben)
-    const monatsausgaben = data.fixkosten + data.variableAusgaben;
-    const notgroschenZiel = monatsausgaben * 3;
-    const notgroschenRatio = data.notgroschen / notgroschenZiel;
-    score += Math.min(Math.round(notgroschenRatio * 15), 15);
-    
-    // Sparquote
-    if (sparquote >= 15) score += 10;
-    else score += Math.round((sparquote / 15) * 10);
-    
-    // Schulden
-    const monatseinkommenRatio = gesamtSchulden / data.einkommen;
-    if (monatseinkommenRatio <= 1) score += 10;
-    else if (monatseinkommenRatio <= 3) score += 5;
-    
-    return score;
-  };
-
-  // Berechne den Score für Anlage & Vermögensbasis
-  const calculateAnlageVermogensScore = () => {
-    let score = 0;
-    
-    // Diversifikation des Vermögens
-    const hasTagesgeld = data.tagesgeld > 0;
-    const hasETF = data.etf > 0;
-    const hasBausparen = data.bausparen > 0;
-    
-    if (hasTagesgeld) score += 5;
-    if (hasETF) score += 10;
-    if (hasBausparen) score += 5;
-    
-    // Fortschritt zum Vermögensziel
-    score += Math.min(Math.round(vermogensZielFortschritt / 5), 15);
-    
-    // Altersvorsorge
-    const hasGesetzlicheRente = data.gesetzlicheRente > 0;
-    const hasBetrieblicheVorsorge = data.betrieblicheAltersvorsorge > 0;
-    const hasPrivateVorsorge = data.privateVorsorge > 0;
-    
-    if (hasGesetzlicheRente) score += 5;
-    if (hasBetrieblicheVorsorge) score += 10;
-    if (hasPrivateVorsorge) score += 5;
-    
-    return score;
-  };
-
-  // Berechne den Score für Risikoabsicherung
-  const calculateRisikoScore = () => {
-    let score = 0;
-    
-    // Personenschutz
-    if (data.berufsunfahigkeitsversicherung) score += 10;
-    if (data.lebensversicherung) score += 5;
-    if (data.pflegeversicherung) score += 5;
-    if (data.unfallversicherung) score += 3;
-    if (data.auslandsreisekrankenversicherung) score += 2;
-    
-    // Sachschutz
-    if (data.hausratversicherung) score += 5;
-    if (data.haftpflichtversicherung) score += 10;
-    if (data.rechtsschutzversicherung) score += 5;
-    if (data.kfzVersicherung) score += 3;
-    if (data.elektronikversicherung) score += 2;
-    
-    // Notfallordner
-    if (data.patientenverfugung) score += 2.5;
-    if (data.vorsorgevollmacht) score += 2.5;
-    if (data.betreuungsverfugung) score += 2.5;
-    if (data.testament) score += 2.5;
-    
-    return score;
-  };
-
-  // Handler für Änderungen in den Eingabefeldern
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    
-    // Für Checkboxen den checked-Wert verwenden, sonst den value-Wert
-    setData({
-      ...data,
-      [name]: type === 'checkbox' ? checked : (type === 'number' ? parseFloat(value) || 0 : value)
-    });
-  };
-
-  // Daten für Vermögens-Pie-Chart
-  const vermogenChartData = [
-    { name: 'Tagesgeld', value: data.tagesgeld },
-    { name: 'ETF', value: data.etf },
-    { name: 'Bausparen', value: data.bausparen }
-  ];
-
-  // Farben für das Chart - HoFT Corporate Design
-  const COLORS = ['#001E62', '#FF5C39', '#345082'];
-
-  // HoFT Farben
-  const hoftBlue = "#001E62";
-  const hoftOrange = "#FF5C39";
-
-  // Logo-Komponente
-  const HoftLogo = () => (
-    <div className="flex items-center">
-      <div className="mr-2 font-bold text-white">
-        <span className="block text-xl">HoFT</span>
-      </div>
-      <div className="text-xs text-white">
-        <span className="block">House of</span>
-        <span className="block">Finance & Tech</span>
-      </div>
+                <div class="mt-6 flex justify-center">
+                    <button class="py-3 px-8 rounded-md text-white font-semibold transition hoft-btn-orange">
+                        Beratungstermin vereinbaren
+                    </button>
+                </div>
+            </div>
+            
+        </main>
+        
+        <!-- Footer -->
+        <footer class="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center">
+            <div class="text-sm text-gray-500">
+                Financial Wellbeing Hub | April 2025
+            </div>
+            <div class="flex items-center">
+                <div class="mr-2 font-bold text-white bg-blue-900 p-2 rounded" style="background-color: var(--hoft-blue);">
+                    <span class="block text-xl">HoFT</span>
+                </div>
+                <div class="text-xs text-blue-900" style="color: var(--hoft-blue);">
+                    <span class="block">House of</span>
+                    <span class="block">Finance & Tech</span>
+                </div>
+            </div>
+        </footer>
     </div>
-  );
 
-  return (
-    <div className="flex flex-col items-center w-full bg-white p-4">
-      {/* Header mit HoFT Styling */}
-      <div className="w-full max-w-6xl flex justify-between items-center mb-6">
-        <HoftLogo />
-        <div className="text-sm text-gray-500">Berlin, April 2025</div>
-      </div>
-      
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Financial Wellbeing Dashboard</h1>
-      
-      {/* Hauptcontainer */}
-      <div className="w-full max-w-6xl">
-        {/* Oberer Bereich - Gesamtscore */}
-        <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-6 mb-4 rounded-md flex flex-col items-center" style={{backgroundColor: hoftBlue}}>
-          <p className="text-lg mb-1">Übergreifende Abdeckung der Bedarfsfelder:</p>
-          <p className="text-5xl font-bold">{scores.gesamtScore}%</p>
-        </div>
+    <script>
+        // Alle Input-Elemente
+        const inputs = document.querySelectorAll('input');
         
-        {/* Diagonal Design Element */}
-        <div className="relative h-8 mb-4 overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/2 h-16 bg-white transform rotate-3 origin-bottom-right"></div>
-          <div className="absolute top-0 left-0 w-1/2 h-16 bg-white transform -rotate-3 origin-bottom-left"></div>
-        </div>
+        // Alle Checkboxen mit Detailsbereich
+        const checkboxesWithDetails = {
+            'berufsunfaehigkeit': 'berufsunfaehigkeitDetails',
+            'haftpflicht': 'haftpflichtDetails',
+            'rechtsschutz': 'rechtsschutzDetails'
+        };
         
-        {/* Abschnitte für die drei Haupt-Scores */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {/* Finanzielle Basis */}
-          <div className="rounded-md overflow-hidden shadow-md">
-            <div className="text-white p-3 flex justify-between items-center" style={{backgroundColor: hoftBlue}}>
-              <span className="text-sm md:text-base">Finanzielle Basis</span>
-              <span className="text-xl font-bold">{scores.finanzielleBasis}%</span>
-            </div>
-            <div className="bg-gray-50 p-4">
-              <h3 className="font-semibold mb-2 text-gray-700">Monatliche Übersicht</h3>
-              <div className="mb-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="text-sm text-gray-600">Einkommen (€):</label>
-                  <input 
-                    type="number" 
-                    name="einkommen" 
-                    value={data.einkommen} 
-                    onChange={handleInputChange}
-                    className="border px-2 py-1 w-full rounded-sm"
-                  />
-                  
-                  <label className="text-sm text-gray-600">Fixkosten (€):</label>
-                  <input 
-                    type="number" 
-                    name="fixkosten" 
-                    value={data.fixkosten} 
-                    onChange={handleInputChange}
-                    className="border px-2 py-1 w-full rounded-sm"
-                  />
-                  
-                  <label className="text-sm text-gray-600">Variable Ausgaben (€):</label>
-                  <input 
-                    type="number" 
-                    name="variableAusgaben" 
-                    value={data.variableAusgaben} 
-                    onChange={handleInputChange}
-                    className="border px-2 py-1 w-full rounded-sm"
-                  />
-                  
-                  <label className="text-sm font-semibold text-gray-700">Überschuss:</label>
-                  <span className="font-semibold text-gray-700">{uberschuss} €</span>
-                </div>
+        // Vermögen Chart initialisieren
+        let vermoegenChart;
+        
+        // Initial nach dem Laden der Seite
+        document.addEventListener('DOMContentLoaded', function() {
+            // Checkboxen Funktionalität
+            Object.keys(checkboxesWithDetails).forEach(checkboxId => {
+                const checkbox = document.getElementById(checkboxId);
+                const detailsId = checkboxesWithDetails[checkboxId];
                 
-                <div className="mt-4 text-sm text-gray-600">
-                  Sparquote: {sparquote}% (Empfehlung: 15%)
-                </div>
-              </div>
-              
-              <h3 className="font-semibold mb-2 text-gray-700">Notgroschen</h3>
-              <div className="mb-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="text-sm text-gray-600">Notgroschen (€):</label>
-                  <input 
-                    type="number" 
-                    name="notgroschen" 
-                    value={data.notgroschen} 
-                    onChange={handleInputChange}
-                    className="border px-2 py-1 w-full rounded-sm"
-                  />
-                </div>
-                <div className="mt-1 text-sm text-gray-600">
-                  Empfohlen wären {Math.round((data.fixkosten + data.variableAusgaben) * 3)} € (3 Monatsausgaben)
-                </div>
-              </div>
-              
-              <h3 className="font-semibold mb-2 text-gray-700">Schulden</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="text-sm text-gray-600">Konsumentenkredit (€):</label>
-                <input 
-                  type="number" 
-                  name="konsumentenkredit" 
-                  value={data.konsumentenkredit} 
-                  onChange={handleInputChange}
-                  className="border px-2 py-1 w-full rounded-sm"
-                />
-                
-                <label className="text-sm text-gray-600">Dispositionskredit (€):</label>
-                <input 
-                  type="number" 
-                  name="dispositionskredit" 
-                  value={data.dispositionskredit} 
-                  onChange={handleInputChange}
-                  className="border px-2 py-1 w-full rounded-sm"
-                />
-                
-                <label className="text-sm font-semibold text-gray-700">Total:</label>
-                <span className="font-semibold text-gray-700">{gesamtSchulden} €</span>
-              </div>
-            </div>
-            <div className="p-3 bg-blue-50">
-              <button className="w-full py-2 px-4 bg-blue-900 text-white rounded-md hover:bg-blue-800 transition flex items-center justify-center" style={{backgroundColor: hoftBlue}}>
-                <span className="mr-2">01</span> Notgroschen aufbauen
-              </button>
-            </div>
-          </div>
-          
-          {/* Anlage & Vermögensbasis */}
-          <div className="rounded-md overflow-hidden shadow-md">
-            <div className="text-white p-3 flex justify-between items-center" style={{backgroundColor: hoftBlue}}>
-              <span className="text-sm md:text-base">Anlage & Vermögensbasis</span>
-              <span className="text-xl font-bold">{scores.anlageVermogensbasis}%</span>
-            </div>
-            <div className="bg-gray-50 p-4">
-              <h3 className="font-semibold mb-2 text-gray-700">Aktueller Vermögensstand</h3>
-              <div className="mb-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="text-sm text-gray-600">Tagesgeld (€):</label>
-                  <input 
-                    type="number" 
-                    name="tagesgeld" 
-                    value={data.tagesgeld} 
-                    onChange={handleInputChange}
-                    className="border px-2 py-1 w-full rounded-sm"
-                  />
-                  
-                  <label className="text-sm text-gray-600">ETF (€):</label>
-                  <input 
-                    type="number" 
-                    name="etf" 
-                    value={data.etf} 
-                    onChange={handleInputChange}
-                    className="border px-2 py-1 w-full rounded-sm"
-                  />
-                  
-                  <label className="text-sm text-gray-600">Bausparen (€):</label>
-                  <input 
-                    type="number" 
-                    name="bausparen" 
-                    value={data.bausparen} 
-                    onChange={handleInputChange}
-                    className="border px-2 py-1 w-full rounded-sm"
-                  />
-                  
-                  <label className="text-sm font-semibold text-gray-700">Total:</label>
-                  <span className="font-semibold text-gray-700">{gesamtVermogen} €</span>
-                </div>
-                
-                <div className="flex justify-center mt-4">
-                  <PieChart width={150} height={150}>
-                    <Pie
-                      data={vermogenChartData}
-                      cx={75}
-                      cy={75}
-                      innerRadius={30}
-                      outerRadius={60}
-                      fill="#8884d8"
-                      dataKey="value"
-                      labelLine={false}
-                    >
-                      {vermogenChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </div>
-                
-                <div className="mt-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className="text-sm text-gray-600">Vermögensziel (€):</label>
-                    <input 
-                      type="number" 
-                      name="vermogensziel" 
-                      value={data.vermogensziel} 
-                      onChange={handleInputChange}
-                      className="border px-2 py-1 w-full rounded-sm"
-                    />
+                if (checkbox && document.getElementById(detailsId)) {
+                    checkbox.addEventListener('change', function() {
+                        document.getElementById(detailsId).style.display = this.checked ? 'block' : 'none';
+                        updateAllCalculations();
+                    });
                     
-                    <label className="text-sm text-gray-600">Zieljahr:</label>
-                    <input 
-                      type="number" 
-                      name="zieljahr" 
-                      value={data.zieljahr} 
-                      onChange={handleInputChange}
-                      className="border px-2 py-1 w-full rounded-sm"
-                    />
-                  </div>
-                  <div className="mt-1 text-sm text-gray-600">
-                    Ziel: {data.vermogensziel.toLocaleString()} € bis {data.zieljahr} ({vermogensZielFortschritt}% erreicht)
-                  </div>
-                </div>
-              </div>
-              
-              <h3 className="font-semibold mb-2 text-gray-700">Altersvorsorge</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="text-sm text-gray-600">Gesetzliche Rentenansprüche (€):</label>
-                <input 
-                  type="number" 
-                  name="gesetzlicheRente" 
-                  value={data.gesetzlicheRente} 
-                  onChange={handleInputChange}
-                  className="border px-2 py-1 w-full rounded-sm"
-                />
-                
-                <label className="text-sm text-gray-600">Betriebliche Altersvorsorge (€):</label>
-                <input 
-                  type="number" 
-                  name="betrieblicheAltersvorsorge" 
-                  value={data.betrieblicheAltersvorsorge} 
-                  onChange={handleInputChange}
-                  className="border px-2 py-1 w-full rounded-sm"
-                />
-                
-                <label className="text-sm text-gray-600">Private Vorsorge (€):</label>
-                <input 
-                  type="number" 
-                  name="privateVorsorge" 
-                  value={data.privateVorsorge} 
-                  onChange={handleInputChange}
-                  className="border px-2 py-1 w-full rounded-sm"
-                />
-                
-                <label className="text-sm font-semibold text-gray-700">Erwartete monatliche Rente:</label>
-                <span className="font-semibold text-gray-700">{monatlicherRente} €</span>
-              </div>
-              <div className="mt-1 text-sm text-gray-600">
-                Deine aktuelle Vorsorge deckt rund {Math.round((monatlicherRente / (data.fixkosten + data.variableAusgaben)) * 100)}% deiner aktuellen Lebenshaltungskosten ab
-              </div>
-            </div>
-            <div className="p-3 bg-blue-50">
-              <button className="w-full py-2 px-4 bg-blue-900 text-white rounded-md hover:bg-blue-800 transition flex items-center justify-center" style={{backgroundColor: hoftBlue}}>
-                <span className="mr-2">02</span> Vorsorgelücke schließen
-              </button>
-            </div>
-          </div>
-          
-          {/* Risikoabsicherung */}
-          <div className="rounded-md overflow-hidden shadow-md">
-            <div className="text-white p-3 flex justify-between items-center" style={{backgroundColor: hoftBlue}}>
-              <span className="text-sm md:text-base">Risikoabsicherung</span>
-              <span className="text-xl font-bold">{scores.risikoabsicherung}%</span>
-            </div>
-            <div className="bg-gray-50 p-4">
-              <h3 className="font-semibold mb-2 text-gray-700">Personenschutz</h3>
-              <div className="mb-4">
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="berufsunfahigkeitsversicherung" 
-                    name="berufsunfahigkeitsversicherung" 
-                    checked={data.berufsunfahigkeitsversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="berufsunfahigkeitsversicherung" className="text-sm text-gray-600">Berufsunfähigkeitsversicherung</label>
-                </div>
-                {data.berufsunfahigkeitsversicherung && (
-                  <div className="pl-6 mb-2">
-                    <label className="text-sm text-gray-600">Betrag (€/Monat):</label>
-                    <input 
-                      type="number" 
-                      name="berufsunfahigkeitsBetrag" 
-                      value={data.berufsunfahigkeitsBetrag} 
-                      onChange={handleInputChange}
-                      className="border px-2 py-1 w-32 ml-2 rounded-sm"
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="lebensversicherung" 
-                    name="lebensversicherung" 
-                    checked={data.lebensversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="lebensversicherung" className="text-sm text-gray-600">Lebensversicherung</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="pflegeversicherung" 
-                    name="pflegeversicherung" 
-                    checked={data.pflegeversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="pflegeversicherung" className="text-sm text-gray-600">Pflegeversicherung</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="unfallversicherung" 
-                    name="unfallversicherung" 
-                    checked={data.unfallversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="unfallversicherung" className="text-sm text-gray-600">Unfallversicherung</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="auslandsreisekrankenversicherung" 
-                    name="auslandsreisekrankenversicherung" 
-                    checked={data.auslandsreisekrankenversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="auslandsreisekrankenversicherung" className="text-sm text-gray-600">Auslandsreisekrankenversicherung</label>
-                </div>
-              </div>
-              
-              <h3 className="font-semibold mb-2 text-gray-700">Sachschutz</h3>
-              <div className="mb-4">
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="hausratversicherung" 
-                    name="hausratversicherung" 
-                    checked={data.hausratversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="hausratversicherung" className="text-sm text-gray-600">Hausratversicherung</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="haftpflichtversicherung" 
-                    name="haftpflichtversicherung" 
-                    checked={data.haftpflichtversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="haftpflichtversicherung" className="text-sm text-gray-600">Haftpflichtversicherung</label>
-                </div>
-                {data.haftpflichtversicherung && (
-                  <div className="pl-6 mb-2">
-                    <label className="text-sm text-gray-600">Deckungssumme (Mio. €):</label>
-                    <input 
-                      type="number" 
-                      name="haftpflichtDeckung" 
-                      value={data.haftpflichtDeckung} 
-                      onChange={handleInputChange}
-                      className="border px-2 py-1 w-24 ml-2 rounded-sm"
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="rechtsschutzversicherung" 
-                    name="rechtsschutzversicherung" 
-                    checked={data.rechtsschutzversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="rechtsschutzversicherung" className="text-sm text-gray-600">Rechtsschutzversicherung</label>
-                </div>
-                {data.rechtsschutzversicherung && (
-                  <div className="pl-6 mb-2">
-                    <label className="text-sm text-gray-600">Beitrag (€/Monat):</label>
-                    <input 
-                      type="number" 
-                      name="rechtsschutzBeitrag" 
-                      value={data.rechtsschutzBeitrag} 
-                      onChange={handleInputChange}
-                      className="border px-2 py-1 w-24 ml-2 rounded-sm"
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="kfzVersicherung" 
-                    name="kfzVersicherung" 
-                    checked={data.kfzVersicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="kfzVersicherung" className="text-sm text-gray-600">Kfz-Versicherung</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="elektronikversicherung" 
-                    name="elektronikversicherung" 
-                    checked={data.elektronikversicherung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="elektronikversicherung" className="text-sm text-gray-600">Elektronikversicherung</label>
-                </div>
-              </div>
-              
-              <h3 className="font-semibold mb-2 text-gray-700">Notfallordner</h3>
-              <div>
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="patientenverfugung" 
-                    name="patientenverfugung" 
-                    checked={data.patientenverfugung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="patientenverfugung" className="text-sm text-gray-600">Patientenverfügung</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="vorsorgevollmacht" 
-                    name="vorsorgevollmacht" 
-                    checked={data.vorsorgevollmacht} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="vorsorgevollmacht" className="text-sm text-gray-600">Vorsorgevollmacht</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="betreuungsverfugung" 
-                    name="betreuungsverfugung" 
-                    checked={data.betreuungsverfugung} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="betreuungsverfugung" className="text-sm text-gray-600">Betreuungsverfügung</label>
-                </div>
-                
-                <div className="flex items-center mb-1">
-                  <input 
-                    type="checkbox" 
-                    id="testament" 
-                    name="testament" 
-                    checked={data.testament} 
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="testament" className="text-sm text-gray-600">Testament</label>
-                </div>
-              </div>
-            </div>
-            <div className="p-3 bg-blue-50">
-              <button className="w-full py-2 px-4 bg-blue-900 text-white rounded-md hover:bg-blue-800 transition flex items-center justify-center" style={{backgroundColor: hoftBlue}}>
-                <span className="mr-2">03</span> Absicherungslücken schließen
-              </button>
-            </div>
-          </div>
-        </div>
+                    // Initial setzen
+                    document.getElementById(detailsId).style.display = checkbox.checked ? 'block' : 'none';
+                }
+            });
+            
+            // Alle Inputs mit Event-Listener versehen
+            inputs.forEach(input => {
+                input.addEventListener('change', updateAllCalculations);
+                input.addEventListener('input', updateAllCalculations);
+            });
+            
+            // Chart initialisieren
+            initChart();
+            
+            // Initial berechnen
+            updateAllCalculations();
+        });
         
-        {/* Empfehlungsbereich */}
-        <div className="bg-white p-6 rounded-md shadow-md border border-gray-100">
-          <div className="flex items-center mb-4">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3" style={{backgroundColor: hoftOrange}}>
-              <span className="text-white font-bold">€</span>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-800">Empfehlungen für deine finanzielle Zukunft</h2>
-          </div>
-          
-          <div className="space-y-3">
-            {scores.finanzielleBasis < 50 && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Finanzielle Basis stärken:</span> Dein Score in diesem Bereich ist niedrig. Versuche, deinen Notgroschen aufzubauen und Schulden zu reduzieren.
-              </div>
-            )}
-            
-            {data.notgroschen < (data.fixkosten + data.variableAusgaben) * 3 && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Notgroschen erhöhen:</span> Es wird empfohlen, einen Notgroschen in Höhe von 3 Monatsausgaben ({Math.round((data.fixkosten + data.variableAusgaben) * 3)} €) anzusparen.
-              </div>
-            )}
-            
-            {sparquote < 15 && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Sparquote verbessern:</span> Deine aktuelle Sparquote von {sparquote}% liegt unter der Empfehlung von 15%. Versuche, deine Ausgaben zu optimieren.
-              </div>
-            )}
-            
-            {data.dispositionskredit > 0 && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Dispositionskredit abbauen:</span> Du zahlst wahrscheinlich hohe Zinsen für deinen Dispokredit. Versuche, diesen schnellstmöglich zurückzuzahlen.
-              </div>
-            )}
-            
-            {scores.anlageVermogensbasis < 50 && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Vermögensaufbau optimieren:</span> Dein Score in diesem Bereich lässt Raum für Verbesserung. Überlege, deine Anlagestrategie zu diversifizieren.
-              </div>
-            )}
-            
-            {!data.privateVorsorge && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Private Altersvorsorge einrichten:</span> Du hast noch keine private Altersvorsorge. Dies kann deine finanzielle Sicherheit im Alter verbessern.
-              </div>
-            )}
-            
-            {scores.risikoabsicherung < 50 && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Absicherung verbessern:</span> Dein Risikoabsicherungsscore deutet auf Lücken in deiner Versicherungssituation hin.
-              </div>
-            )}
-            
-            {!data.hausratversicherung && (
-              <div className="p-3 bg-blue-50 border-l-4 rounded-r-md" style={{borderColor: hoftBlue}}>
-                <span className="font-semibold text-gray-700">Hausratversicherung prüfen:</span> Eine Hausratversicherung schützt deinen Hausrat gegen Schäden wie Feuer, Wasserschäden oder Einbruch.
-              </div>
-            )}
-            
-            {scores.gesamtScore >= 70 && (
-              <div className="p-3 bg-green-50 border-l-4 border-green-400 rounded-r-md">
-                <span className="font-semibold text-gray-700">Gut gemacht!</span> Du hast bereits eine solide finanzielle Basis aufgebaut. Bleib dran und optimiere weiter!
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 flex justify-center">
-            <button className="py-3 px-8 rounded-md text-white font-semibold transition" style={{backgroundColor: hoftOrange}}>
-              Beratungstermin vereinbaren
-            </button>
-          </div>
-        </div>
+        // Chart initialisieren
+        function initChart() {
+            const ctx = document.getElementById('vermoegenChart').getContext('2d');
+            vermoegenChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tagesgeld', 'ETF', 'Bausparen'],
+                    datasets: [{
+                        data: [8000, 12500, 7300],
+                        backgroundColor: [
+                            '#001E62', // HoFT Blue
+                            '#FF5C39', // HoFT Orange
+                            '#345082'  // Light Blue
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
         
-        {/* Footer mit HoFT Styling */}
-        <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            Financial Wellbeing Hub | April 2025
-          </div>
-          <HoftLogo />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default FinancialWellbeingDashboard;
+        // Aktualisieren des Vermögen-Charts
+        function updateVermoegenChart() {
+            const tagesgeld = parseFloat(document.getElementById('tagesgeld').value) || 0;
+            const etf = parseFloat(document.getElementById('etf').value) || 0;
+            const bausparen = parseFloat(document.getElementById('bausparen').value) || 0;
+            
+            vermoegenChart.data.datasets[0].data = [tagesgeld, etf, bausparen];
+            vermoegenChart.update();
+        }
+        
+        // Alle Berechnungen aktualisieren
+        function updateAllCalculations() {
+            // Finanzielle Basis
+            updateFinanzielleBasis();
+            
+            // Anlage & Vermögensbasis
+            updateAnlageVermoegen();
+            
+            // Risikoabsicherung
+            updateRisikoabsicherung();
+            
+            // Gesamtscore
+            updateGesamtscore();
+            
+            // Empfehlungen
+            updateEmpfehlungen();
+            
+            // Chart aktualisieren
+            updateVermoegenChart();
+        }
+        
+        // Finanzielle Basis Berechnungen
+        function updateFinanzielleBasis() {
+            // Werte aus Eingabefeldern holen
+            const einkommen = parseFloat(document.getElementById('einkommen').value) || 0;
+            const fixkosten = parseFloat(document.getElementById('fixkosten').value) || 0;
+            const variableAusgaben = parseFloat(document.getElementById('variableAusgaben').value) || 0;
+            const notgroschen = parseFloat(document.getElementById('notgroschen').value) || 0;
+            const konsumentenkredit = parseFloat(document.getElementById('konsumentenkredit').value) || 0;
+            const dispositionskredit = parseFloat(document.getElementById('dispositionskredit').value) || 0;
+            
+            // Berechnungen
+            const ueberschuss = einkommen - fixkosten - variableAusgaben;
+            const sparquote = Math.round((ueberschuss / einkommen) * 100);
+            const gesamtSchulden = konsumentenkredit + dispositionskredit;
+            const empfohlenerNotgroschen = Math.round((fixkosten + variableAusgaben) * 3);
+            
+            // Score berechnen
+            let score = 0;
+            
+            // Überschuss vorhanden
+            if (ueberschuss > 0) score += 10;
+            
+            // Notgroschen ausreichend (3 Monatsausgaben)
+            const monatsausgaben = fixkosten + variableAusgaben;
+            const notgroschenZiel = monatsausgaben * 3;
+            const notgroschenRatio = notgroschen / notgroschenZiel;
+            score += Math.min(Math.round(notgroschenRatio * 15), 15);
+            
+            // Sparquote
+            if (sparquote >= 15) score += 10;
+            else score += Math.round((sparquote / 15) * 10);
+            
+            // Schulden
+            const monatseinkommenRatio = gesamtSchulden / einkommen;
+            if (monatseinkommenRatio <= 1) score += 10;
+            else if (monatseinkommenRatio <= 3) score += 5;
+            
+            // Werte in DOM aktualisieren
+            document.getElementById('ueberschuss').textContent = ueberschuss + ' €';
+            document.getElementById('sparquote').textContent = sparquote;
+            document.getElementById('empfohlenerNotgroschen').textContent = empfohlenerNotgroschen;
+            document.getElementById('gesamtSchulden').textContent = gesamtSchulden + ' €';
+            document.getElementById('finanzielleBasisScore').textContent = score + '%';
+            
+            return score;
+        }
+        
+        // Anlage & Vermögensbasis Berechnungen
+        function updateAnlageVermoegen() {
+            // Werte aus Eingabefeldern holen
+            const tagesgeld = parseFloat(document.getElementById('tagesgeld').value) || 0;
+            const etf = parseFloat(document.getElementById('etf').value) || 0;
+            const bausparen = parseFloat(document.getElementById('bausparen').value) || 0;
+            const vermogensziel = parseFloat(document.getElementById('vermogensziel').value) || 0;
+            const zieljahr = parseFloat(document.getElementById('zieljahr').value) || 0;
+            const gesetzlicheRente = parseFloat(document.getElementById('gesetzlicheRente').value) || 0;
+            const betrieblicheAltersvorsorge = parseFloat(document.getElementById('betrieblicheAltersvorsorge').value) || 0;
+            const privateVorsorge = parseFloat(document.getElementById('privateVorsorge').value) || 0;
+            
+            // Berechnungen
+            const gesamtVermoegen = tagesgeld + etf + bausparen;
+            const vermogensZielFortschritt = Math.round((gesamtVermoegen / vermogensziel) * 100);
+            const monatlicheRente = gesetzlicheRente + betrieblicheAltersvorsorge + privateVorsorge;
+            
+            // Vorsorgedeckung berechnen
+            const fixkosten = parseFloat(document.getElementById('fixkosten').value) || 0;
+            const variableAusgaben = parseFloat(document.getElementById('variableAusgaben').value) || 0;
+            const monatlicheAusgaben = fixkosten + variableAusgaben;
+            const vorsorgedeckung = Math.round((monatlicheRente / monatlicheAusgaben) * 100);
+            
+            // Score berechnen
+            let score = 0;
+            
+            // Diversifikation des Vermögens
+            const hasTagesgeld = tagesgeld > 0;
+            const hasETF = etf > 0;
+            const hasBausparen = bausparen > 0;
+            
+            if (hasTagesgeld) score += 5;
+            if (hasETF) score += 10;
+            if (hasBausparen) score += 5;
+            
+            // Fortschritt zum Vermögensziel
+            score += Math.min(Math.round(vermogensZielFortschritt / 5), 15);
+            
+            // Altersvorsorge
+            const hasGesetzlicheRente = gesetzlicheRente > 0;
+            const hasBetrieblicheVorsorge = betrieblicheAltersvorsorge > 0;
+            const hasPrivateVorsorge = privateVorsorge > 0;
+            
+            if (hasGesetzlicheRente) score += 5;
+            if (hasBetrieblicheVorsorge) score += 10;
+            if (hasPrivateVorsorge) score += 5;
+            
+            // Werte in DOM aktualisieren
+            document.getElementById('gesamtVermoegen').textContent = gesamtVermoegen + ' €';
+            document.getElementById('vermogenszielDisplay').textContent = vermogensziel.toLocaleString();
+            document.getElementById('zieljahrDisplay').textContent = zieljahr;
+            document.getElementById('vermogensZielFortschritt').textContent = vermogensZielFortschritt;
+            document.getElementById('monatlicheRente').textContent = monatlicheRente + ' €';
+            document.getElementById('vorsorgedeckung').textContent = vorsorgedeckung;
+            document.getElementById('anlageVermogensScore').textContent = score + '%';
+            
+            return score;
+        }
+        
+        // Risikoabsicherung Berechnungen
+        function updateRisikoabsicherung() {
+            // Werte aus Checkboxen holen
+            const berufsunfaehigkeit = document.getElementById('berufsunfaehigkeit').checked;
+            const leben = document.getElementById('leben').checked;
+            const pflege = document.getElementById('pflege').checked;
+            const unfall = document.getElementById('unfall').checked;
+            const ausland = document.getElementById('ausland').checked;
+            const hausrat = document.getElementById('hausrat').checked;
+            const haftpflicht = document.getElementById('haftpflicht').checked;
+            const rechtsschutz = document.getElementById('rechtsschutz').checked;
+            const kfz = document.getElementById('kfz').checked;
+            const elektronik = document.getElementById('elektronik').checked;
+            const patientenverfuegung = document.getElementById('patientenverfuegung').checked;
+            const vorsorgevollmacht = document.getElementById('vorsorgevollmacht').checked;
+            const betreuungsverfuegung = document.getElementById('betreuungsverfuegung').checked;
+            const testament = document.getElementById('testament').checked;
+            
+            // Score berechnen
+            let score = 0;
+            
+            // Personenschutz
+            if (berufsunfaehigkeit) score += 10;
+            if (leben) score += 5;
+            if (pflege) score += 5;
+            if (unfall) score += 3;
+            if (ausland) score += 2;
+            
+            // Sachschutz
+            if (hausrat) score += 5;
+            if (haftpflicht) score += 10;
+            if (rechtsschutz) score += 5;
+            if (kfz) score += 3;
+            if (elektronik) score += 2;
+            
+            // Notfallordner
+            if (patientenverfuegung) score += 2.5;
+            if (vorsorgevollmacht) score += 2.5;
+            if (betreuungsverfuegung) score += 2.5;
+            if (testament) score += 2.5;
+            
+            // Werte in DOM aktualisieren
+            document.getElementById('risikoScore').textContent = score + '%';
+            
+            return score;
+        }
+        
+        // Gesamtscore berechnen
+        function updateGesamtscore() {
+            const finanzielleBasisScore = parseInt(document.getElementById('finanzielleBasisScore').textContent) || 0;
+            const anlageVermogensScore = parseInt(document.getElementById('anlageVermogensScore').textContent) || 0;
+            const risikoScore = parseInt(document.getElementById('risikoScore').textContent) || 0;
+            
+            const gesamtScore = Math.round((finanzielleBasisScore + anlageVermogensScore + risikoScore) / 3);
+            
+            document.getElementById('gesamtScore').textContent = gesamtScore + '%';
+            
+            return gesamtScore;
+        }
+        
+        // Empfehlungen aktualisieren
+        function updateEmpfehlungen() {
+            const empfehlungenContainer = document.getElementById('empfehlungen');
+            empfehlungenContainer.innerHTML = ''; // Zurücksetzen
+            
+            const empfehlungen = [];
+            
+            // Finanzielle Basis Empfehlungen
+            const finanzielleBasisScore = parseInt(document.getElementById('finanzielleBasisScore').textContent) || 0;
+            const notgroschen = parseFloat(document.getElementById('notgroschen').value) || 0;
+            const fixkosten = parseFloat(document.getElementById('fixkosten').value) || 0;
+            const variableAusgaben = parseFloat(document.getElementById('variableAusgaben').value) || 0;
+            const sparquote = parseInt(document.getElementById('sparquote').textContent) || 0;
+            const dispositionskredit = parseFloat(document.getElementById('dispositionskredit').value) || 0;
+            
+            if (finanzielleBasisScore < 50) {
+                empfehlungen.push({
+                    text: '<span class="font-semibold text-gray-700">Finanzielle Basis stärken:</span> Dein Score in diesem Bereich ist niedrig. Versuche, deinen Notgroschen aufzubauen und Schulden zu reduzieren.'
+                });
+            }
+            
+            if (notgroschen < (fixkosten + variableAusgaben) * 3) {
+                empfehlungen.push({
+                    text: `<span class="font-semibold text-gray-700">Notgroschen erhöhen:</span> Es wird empfohlen, einen Notgroschen in Höhe von 3 Monatsausgaben (${Math.round((fixkosten + variableAusgaben) * 3)} €) anzusparen.`
+                });
+            }
+            
+            if (sparquote < 15) {
+                empfehlungen.push({
+                    text: `<span class="font-semibold text-gray-700">Sparquote verbessern:</span> Deine aktuelle Sparquote von ${sparquote}% liegt unter der Empfehlung von 15%. Versuche, deine Ausgaben zu optimieren.`
+                });
+            }
+            
+            if (dispositionskredit > 0) {
+                empfehlungen.push({
+                    text: '<span class="font-semibold text-gray-700">Dispositionskredit abbauen:</span> Du zahlst wahrscheinlich hohe Zinsen für deinen Dispokredit. Versuche, diesen schnellstmöglich zurückzuzahlen.'
+                });
+            }
+            
+            // Anlage & Vermögensbasis Empfehlungen
+            const anlageVermogensScore = parseInt(document.getElementById('anlageVermogensScore').textContent) || 0;
+            const privateVorsorge = parseFloat(document.getElementById('privateVorsorge').value) || 0;
+            
+            if (anlageVermogensScore < 50) {
+                empfehlungen.push({
+                    text: '<span class="font-semibold text-gray-700">Vermögensaufbau optimieren:</span> Dein Score in diesem Bereich lässt Raum für Verbesserung. Überlege, deine Anlagestrategie zu diversifizieren.'
+                });
+            }
+            
+            if (privateVorsorge <= 0) {
+                empfehlungen.push({
+                    text: '<span class="font-semibold text-gray-700">Private Altersvorsorge einrichten:</span> Du hast noch keine private Altersvorsorge. Dies kann deine finanzielle Sicherheit im Alter verbessern.'
+                });
+            }
+            
+            // Risikoabsicherung Empfehlungen
+            const risikoScore = parseInt(document.getElementById('risikoScore').textContent) || 0;
+            const hausrat = document.getElementById('hausrat').checked;
+            
+            if (risikoScore < 50) {
+                empfehlungen.push({
+                    text: '<span class="font-semibold text-gray-700">Absicherung verbessern:</span> Dein Risikoabsicherungsscore deutet auf Lücken in deiner Versicherungssituation hin.'
+                });
+            }
+            
+            if (!hausrat) {
+                empfehlungen.push({
+                    text: '<span class="font-semibold text-gray-700">Hausratversicherung prüfen:</span> Eine Hausratversicherung schützt deinen Hausrat gegen Schäden wie Feuer, Wasserschäden oder Einbruch.'
+                });
+            }
+            
+            // Positive Empfehlung bei hohem Gesamtscore
+            const gesamtScore = parseInt(document.getElementById('gesamtScore').textContent) || 0;
+            
+            if (gesamtScore >= 70) {
+                empfehlungen.push({
+                    text: '<span class="font-semibold text-gray-700">Gut gemacht!</span> Du hast bereits eine solide finanzielle Basis aufgebaut. Bleib dran und optimiere weiter!',
+                    positive: true
+                });
+            }
+            
+            // Empfehlungen zum DOM hinzufügen
+            empfehlungen.forEach(empfehlung => {
+                const div = document.createElement('div');
+                div.className = empfehlung.positive 
+                    ? 'p-3 bg-green-50 border-l-4 border-green-400 rounded-r-md'
+                    : 'p-3 bg-blue-50 border-l-4 hoft-border rounded-r-md';
+                div.innerHTML = empfehlung.text;
+                empfehlungenContainer.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
